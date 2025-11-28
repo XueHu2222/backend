@@ -6,7 +6,7 @@ import Cors from 'cors';
 const router: Router = Express.Router();
 
 
-router.get('/tasks/:userId', getTasks);
-router.post('/tasks/:userId', addTask);
+router.get('/:userId', getTasks);
+router.post('/:userId', addTask);
 
 export default router;

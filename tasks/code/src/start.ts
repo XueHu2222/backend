@@ -2,8 +2,8 @@ import Express, { Application, Request, Response, NextFunction } from 'express';
 import * as Dotenv from 'dotenv';
 Dotenv.config({ path: '.env' });
 
-import IndexRouter from './routes/index.js';
-import { errorHandler } from './middleware/errors/errorHandler.js';
+import IndexRouter from './routes/index.ts';
+import { errorHandler } from './middleware/errors/errorHandler.ts';
 import helmet from 'helmet';
 import cors from 'cors';
 
@@ -28,7 +28,7 @@ app.use(Express.json());
 app.use(Express.urlencoded({ extended: true }));
 
 // Main routes
-app.use('/', IndexRouter);
+app.use('/tasks', IndexRouter);
 
 // 404 handler
 app.use((req: Request, res: Response, next: NextFunction) => {
