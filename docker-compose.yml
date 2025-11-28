@@ -1,0 +1,38 @@
+services:
+  appointments:
+    container_name: appointments
+    build: ./appointments
+    volumes:
+      - ./appointments/code:/usr/src/app
+    networks:
+      - veterinarian
+    ports:
+      - "3010:3010"
+    working_dir: /usr/src/app
+    command: bash -c "npm install && npm run dev"
+  clients:
+    container_name: clients
+    build: ./clients
+    volumes:
+      - ./clients/code:/usr/src/app
+    networks:
+      - veterinarian
+    ports:
+      - "3012:3012"
+    working_dir: /usr/src/app
+    command: bash -c "npm install && npm run dev"
+  gateway:
+    container_name: apigateway
+    build: ./apigateway
+    volumes:
+      - ./apigateway/code:/usr/src/app
+    networks:
+      - veterinarian
+    ports:
+      - "3011:3011"
+    working_dir: /usr/src/app
+    command: bash -c "npm install && npm run dev"
+
+networks:
+  veterinarian:
+    driver: bridge
