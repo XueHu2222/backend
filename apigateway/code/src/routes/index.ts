@@ -1,45 +1,39 @@
-import Express, { NextFunction, Request, Response, Router } from 'express';
-import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
-import type { Filter, Options, RequestHandler } from 'http-proxy-middleware';
-import { authenticateToken } from '../middleware/authentication/authenticate.ts';
+// apigateway/routes/index.ts
+import Express, { Router, Request, Response } from 'express';
+import { createProxyMiddleware, RequestHandler } from 'http-proxy-middleware';
+
 const router: Router = Express.Router();
 
+// helper to fix POST/PUT body
+function fixRequestBody(proxyReq: any, req: Request, res: Response) {
+  if (!req.body || Object.keys(req.body).length === 0) return;
 
-// create a proxy for each microservice
-// add the on: { proxyReq: fixRequestBody } to fix the body issue with POST/PUT requests
-// see https://www.npmjs.com/package/http-proxy-middleware#intercept-and-manipulate-requests
-const clientProxyMiddleware = createProxyMiddleware<Request, Response>({
-  target: 'http://clients:3012/owners',
-  on: {
-    proxyReq: fixRequestBody,
-  },
-  changeOrigin: true
+  const bodyData = JSON.stringify(req.body);
+
+  // Update headers
+  proxyReq.setHeader('Content-Type', 'application/json');
+  proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+
+  // Write body
+  proxyReq.write(bodyData);
+}
+
+// Auth Proxy
+const authProxy: RequestHandler = createProxyMiddleware({
+  target: 'http://localhost:3012/auth',
+  changeOrigin: true,
+  on: { proxyReq: fixRequestBody },
 });
 
-const appointmentProxyMiddleware = createProxyMiddleware<Request, Response>({
-  target: 'http://appointments:3010/api/v1/appointments',
-  on: {
-    proxyReq: fixRequestBody,
-  },
-  changeOrigin: true
+// Task Proxy
+const taskProxy: RequestHandler = createProxyMiddleware({
+  target: 'http://localhost:3010/tasks',
+  changeOrigin: true,
+  on: { proxyReq: fixRequestBody },
 });
 
-const timeslotProxyMiddleware = createProxyMiddleware<Request, Response>({
-  target: 'http://appointments:3010/api/v1/timeslots',
-  on: {
-    proxyReq: fixRequestBody,
-  },
-  changeOrigin: true
-});
-
-
-router.get('/', (req: Request, res: Response, next: NextFunction) => {
-  res.json('hi');
-  next();
-});
-// router.use('/appointments', appointmentProxy);
-router.use('/owners', authenticateToken, clientProxyMiddleware);
-router.use('/appointments', appointmentProxyMiddleware);
-router.use('/timeslots', timeslotProxyMiddleware);
+// Use Proxies
+router.use('/auth', authProxy);
+router.use('/tasks', taskProxy);
 
 export default router;

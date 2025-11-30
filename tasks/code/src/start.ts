@@ -1,34 +1,34 @@
 import Express, { Application, Request, Response, NextFunction } from 'express';
 import * as Dotenv from 'dotenv';
-import helmet from 'helmet';
-import cors from 'cors';
-import IndexRouter from './routes/index.ts';
-import { errorHandler } from './middleware/errors/errorHandler.ts';
-
 Dotenv.config({ path: '.env' });
 
-const app: Application = Express();
-const port: number = process.env.PORT ? parseInt(process.env.PORT) : 3011;
+import IndexRouter from './routes/index.ts';
+import { errorHandler } from './middleware/errors/errorHandler.ts';
+import helmet from 'helmet';
+import cors from 'cors';
 
-// CORS
+const app: Application = Express();
+const port: number = process.env.PORT ? parseInt(process.env.PORT) : 3010;
+
+// CORS configuration
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Security headers
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
 
 // Body parsers
 app.use(Express.json());
 app.use(Express.urlencoded({ extended: true }));
 
-//  Routes
-app.use('/', IndexRouter);
+// Main routes
+app.use('/tasks', IndexRouter);
 
 // 404 handler
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -40,7 +40,7 @@ app.use(errorHandler);
 
 // Start server
 app.listen(port, () => {
-  console.log(`🍿 API Gateway running → PORT ${port}`);
+  console.log(`🍿 Task service running → PORT ${port}`);
 });
 
 // Optional: handle unhandled promise rejections and uncaught exceptions
